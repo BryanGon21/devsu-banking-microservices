@@ -1,0 +1,43 @@
+## Build output
+[Bb]in/
+[Oo]bj/
+[Aa]rtifacts/
+[Tt]est[Rr]esults*/
+coverage*.xml
+coverage*.json
+*.trx
+
+## IDE and user files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Packages and tooling
+packages/
+.nuget/
+.dotnet/
+.sonarqube/
+
+## Local configuration and secrets
+.env
+.env.*
+!.env.example
+appsettings.Development.local.json
+secrets.json
+
+## Containers and databases
+docker-data/
+*.mdf
+*.ldf
+
+## OS files
+.DS_Store
+Thumbs.db
+
+## Delivery archives
+*.zip
+*.rar
