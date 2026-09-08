@@ -22,3 +22,10 @@ indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
+
+# Keep EF Core generated migrations in the format emitted by dotnet-ef on Windows.
+[**/Migrations/*.cs]
+generated_code = true
+charset = utf-8-bom
+end_of_line = crlf
+csharp_style_namespace_declarations = block_scoped:none
