@@ -1,5 +1,6 @@
 using Devsu.Customers.Domain.Entities;
 using Devsu.Customers.Domain.Enums;
+using Devsu.Customers.Domain.Events;
 using Devsu.Customers.Domain.Exceptions;
 
 namespace Devsu.Customers.UnitTests.Domain;
@@ -26,6 +27,22 @@ public sealed class CustomerTests
         Assert.Equal(1, customer.AggregateVersion);
         Assert.Equal(CreationDate, customer.CreatedAtUtc);
         Assert.Equal(CreationDate, customer.UpdatedAtUtc);
+    }
+
+    [Fact]
+    public void Create_RaisesVersionedCustomerCreatedEvent()
+    {
+        Customer customer = CreateCustomer();
+
+        CustomerCreatedDomainEvent domainEvent =
+            Assert.IsType<CustomerCreatedDomainEvent>(Assert.Single(customer.DomainEvents));
+        Assert.NotEqual(Guid.Empty, domainEvent.EventId);
+        Assert.Equal(customer.Id, domainEvent.CustomerId);
+        Assert.Equal(customer.Name, domainEvent.Name);
+        Assert.Equal(1, domainEvent.AggregateVersion);
+        Assert.True(domainEvent.IsActive);
+        Assert.False(domainEvent.IsDeleted);
+        Assert.Equal(CreationDate, domainEvent.OccurredAtUtc);
     }
 
     [Fact]
@@ -71,6 +88,7 @@ public sealed class CustomerTests
     public void ChangeStatus_WithDifferentStatus_IncrementsVersionAndTimestamp()
     {
         Customer customer = CreateCustomer();
+        customer.ClearDomainEvents();
         DateTimeOffset updateDate = CreationDate.AddHours(1);
 
         bool changed = customer.ChangeStatus(false, updateDate);
@@ -79,24 +97,31 @@ public sealed class CustomerTests
         Assert.False(customer.IsActive);
         Assert.Equal(2, customer.AggregateVersion);
         Assert.Equal(updateDate, customer.UpdatedAtUtc);
+        CustomerUpdatedDomainEvent domainEvent =
+            Assert.IsType<CustomerUpdatedDomainEvent>(Assert.Single(customer.DomainEvents));
+        Assert.False(domainEvent.IsActive);
+        Assert.Equal(2, domainEvent.AggregateVersion);
     }
 
     [Fact]
     public void ChangeStatus_WithSameStatus_DoesNotChangeVersion()
     {
         Customer customer = CreateCustomer();
+        customer.ClearDomainEvents();
 
         bool changed = customer.ChangeStatus(true, CreationDate.AddHours(1));
 
         Assert.False(changed);
         Assert.Equal(1, customer.AggregateVersion);
         Assert.Equal(CreationDate, customer.UpdatedAtUtc);
+        Assert.Empty(customer.DomainEvents);
     }
 
     [Fact]
     public void Delete_Twice_IsIdempotent()
     {
         Customer customer = CreateCustomer();
+        customer.ClearDomainEvents();
         DateTimeOffset deletionDate = CreationDate.AddDays(1);
 
         bool firstChange = customer.Delete(deletionDate);
@@ -108,6 +133,11 @@ public sealed class CustomerTests
         Assert.False(customer.IsActive);
         Assert.Equal(deletionDate, customer.DeletedAtUtc);
         Assert.Equal(2, customer.AggregateVersion);
+        CustomerDeletedDomainEvent domainEvent =
+            Assert.IsType<CustomerDeletedDomainEvent>(Assert.Single(customer.DomainEvents));
+        Assert.False(domainEvent.IsActive);
+        Assert.True(domainEvent.IsDeleted);
+        Assert.Equal(2, domainEvent.AggregateVersion);
     }
 
     [Fact]
@@ -135,6 +165,7 @@ public sealed class CustomerTests
     public void Update_WithoutChanges_IsNoOp()
     {
         Customer customer = CreateCustomer();
+        customer.ClearDomainEvents();
 
         bool changed = customer.Update(
             customer.Name,
@@ -150,12 +181,14 @@ public sealed class CustomerTests
         Assert.False(changed);
         Assert.Equal(1, customer.AggregateVersion);
         Assert.Equal(CreationDate, customer.UpdatedAtUtc);
+        Assert.Empty(customer.DomainEvents);
     }
 
     [Fact]
     public void Update_WithNewData_ChangesAggregateOnlyOnce()
     {
         Customer customer = CreateCustomer();
+        customer.ClearDomainEvents();
         DateTimeOffset updateDate = CreationDate.AddHours(1);
 
         bool changed = customer.Update(
@@ -176,6 +209,10 @@ public sealed class CustomerTests
         Assert.False(customer.IsActive);
         Assert.Equal(2, customer.AggregateVersion);
         Assert.Equal(updateDate, customer.UpdatedAtUtc);
+        CustomerUpdatedDomainEvent domainEvent =
+            Assert.IsType<CustomerUpdatedDomainEvent>(Assert.Single(customer.DomainEvents));
+        Assert.Equal("Jose Lema Updated", domainEvent.Name);
+        Assert.Equal(2, domainEvent.AggregateVersion);
     }
 
     private static Customer CreateCustomer(

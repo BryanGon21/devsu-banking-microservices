@@ -35,6 +35,7 @@ internal sealed class CustomerConfiguration : IEntityTypeConfiguration<Customer>
             .IsRowVersion();
 
         builder.Ignore(customer => customer.IsDeleted);
+        builder.Ignore(customer => customer.DomainEvents);
 
         builder.HasIndex(customer => new { customer.IsActive, customer.DeletedAtUtc })
             .HasDatabaseName("IX_Customers_IsActive_DeletedAtUtc");

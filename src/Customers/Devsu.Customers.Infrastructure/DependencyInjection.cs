@@ -1,4 +1,7 @@
 using Devsu.Customers.Application.Ports;
+using Devsu.Customers.Infrastructure.Health;
+using Devsu.Customers.Infrastructure.Messaging.Outbox;
+using Devsu.Customers.Infrastructure.Messaging.RabbitMq;
 using Devsu.Customers.Infrastructure.Persistence;
 using Devsu.Customers.Infrastructure.Repositories;
 using Devsu.Customers.Infrastructure.Security;
@@ -30,8 +33,24 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<CustomersDbContext>());
         services.AddSingleton<IPasswordHasher, AspNetPasswordHasher>();
 
+        services.AddOptions<OutboxPublisherOptions>()
+            .Bind(configuration.GetSection(OutboxPublisherOptions.SectionName))
+            .Validate(OutboxPublisherOptions.IsValid, "The outbox publisher configuration is invalid.")
+            .ValidateOnStart();
+
+        services.AddOptions<RabbitMqOptions>()
+            .Bind(configuration.GetSection(RabbitMqOptions.SectionName))
+            .Validate(RabbitMqOptions.IsValid, "The RabbitMQ configuration is invalid.")
+            .ValidateOnStart();
+
+        services.AddScoped<IOutboxStore, OutboxStore>();
+        services.AddScoped<OutboxProcessor>();
+        services.AddSingleton<IIntegrationEventPublisher, RabbitMqIntegrationEventPublisher>();
+        services.AddHostedService<OutboxPublisherWorker>();
+
         services.AddHealthChecks()
-            .AddDbContextCheck<CustomersDbContext>("customers-sqlserver", tags: ["ready"]);
+            .AddDbContextCheck<CustomersDbContext>("customers-sqlserver", tags: ["ready"])
+            .AddCheck<RabbitMqHealthCheck>("customers-rabbitmq", tags: ["ready"]);
 
         return services;
     }

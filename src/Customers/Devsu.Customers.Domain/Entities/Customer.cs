@@ -1,11 +1,14 @@
 using Devsu.Customers.Domain.Enums;
+using Devsu.Customers.Domain.Events;
 using Devsu.Customers.Domain.Exceptions;
 
 namespace Devsu.Customers.Domain.Entities;
 
-public sealed class Customer : Person
+public sealed class Customer : Person, IHasDomainEvents
 {
     public const int MaximumPasswordHashLength = 512;
+
+    private readonly List<IDomainEvent> _domainEvents = [];
 
     private Customer()
     {
@@ -47,6 +50,8 @@ public sealed class Customer : Person
 
     public bool IsDeleted => DeletedAtUtc.HasValue;
 
+    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+
     public static Customer Create(
         Guid id,
         string name,
@@ -59,7 +64,7 @@ public sealed class Customer : Person
         bool isActive,
         DateTimeOffset createdAtUtc)
     {
-        return new Customer(
+        Customer customer = new(
             id,
             name,
             gender,
@@ -70,6 +75,9 @@ public sealed class Customer : Person
             passwordHash,
             isActive,
             createdAtUtc);
+
+        customer.RaiseCreatedEvent(createdAtUtc);
+        return customer;
     }
 
     public bool Update(
@@ -109,6 +117,7 @@ public sealed class Customer : Person
 
         IsActive = isActive;
         RecordChange(updatedAtUtc);
+        RaiseUpdatedEvent(updatedAtUtc);
         return true;
     }
 
@@ -123,6 +132,7 @@ public sealed class Customer : Person
 
         IsActive = isActive;
         RecordChange(updatedAtUtc);
+        RaiseUpdatedEvent(updatedAtUtc);
         return true;
     }
 
@@ -136,7 +146,13 @@ public sealed class Customer : Person
         IsActive = false;
         DeletedAtUtc = deletedAtUtc.ToUniversalTime();
         RecordChange(deletedAtUtc);
+        RaiseDeletedEvent(deletedAtUtc);
         return true;
+    }
+
+    public void ClearDomainEvents()
+    {
+        _domainEvents.Clear();
     }
 
     private static string ValidatePasswordHash(string passwordHash)
@@ -165,5 +181,41 @@ public sealed class Customer : Person
     {
         UpdatedAtUtc = updatedAtUtc.ToUniversalTime();
         AggregateVersion++;
+    }
+
+    private void RaiseCreatedEvent(DateTimeOffset occurredAtUtc)
+    {
+        _domainEvents.Add(new CustomerCreatedDomainEvent(
+            Guid.NewGuid(),
+            occurredAtUtc.ToUniversalTime(),
+            Id,
+            AggregateVersion,
+            Name,
+            IsActive,
+            IsDeleted));
+    }
+
+    private void RaiseUpdatedEvent(DateTimeOffset occurredAtUtc)
+    {
+        _domainEvents.Add(new CustomerUpdatedDomainEvent(
+            Guid.NewGuid(),
+            occurredAtUtc.ToUniversalTime(),
+            Id,
+            AggregateVersion,
+            Name,
+            IsActive,
+            IsDeleted));
+    }
+
+    private void RaiseDeletedEvent(DateTimeOffset occurredAtUtc)
+    {
+        _domainEvents.Add(new CustomerDeletedDomainEvent(
+            Guid.NewGuid(),
+            occurredAtUtc.ToUniversalTime(),
+            Id,
+            AggregateVersion,
+            Name,
+            IsActive,
+            IsDeleted));
     }
 }
