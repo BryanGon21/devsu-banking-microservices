@@ -16,6 +16,8 @@ public sealed class AccountsDbContext : DbContext, IUnitOfWork
 
     public DbSet<Account> Accounts => Set<Account>();
 
+    public DbSet<AccountMovement> AccountMovements => Set<AccountMovement>();
+
     public DbSet<CustomerProjection> CustomerProjections => Set<CustomerProjection>();
 
     internal DbSet<InboxMessage> InboxMessages => Set<InboxMessage>();

@@ -72,6 +72,10 @@ internal sealed class GlobalExceptionHandler : IExceptionHandler
         {
             ValidationException validation =>
                 (StatusCodes.Status400BadRequest, "Invalid request", validation.Code),
+            InsufficientFundsException insufficientFunds =>
+                (StatusCodes.Status422UnprocessableEntity, "Financial rule violation", insufficientFunds.Code),
+            BusinessRuleException businessRule when IsConflict(businessRule) =>
+                (StatusCodes.Status409Conflict, "Conflict", businessRule.Code),
             BusinessRuleException businessRule =>
                 (StatusCodes.Status400BadRequest, "Business rule violation", businessRule.Code),
             NotFoundException notFound =>
@@ -81,5 +85,10 @@ internal sealed class GlobalExceptionHandler : IExceptionHandler
             _ =>
                 (StatusCodes.Status500InternalServerError, "Internal server error", "internal_error"),
         };
+    }
+
+    private static bool IsConflict(BusinessRuleException exception)
+    {
+        return exception.Code is "account_inactive" or "account_initial_balance_locked";
     }
 }

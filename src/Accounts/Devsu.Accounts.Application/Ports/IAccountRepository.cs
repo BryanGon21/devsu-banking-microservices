@@ -10,6 +10,8 @@ public interface IAccountRepository
 
     public Task<Account?> GetByNumberAsync(string number, CancellationToken cancellationToken);
 
+    public Task<bool> HasMovementsAsync(string number, CancellationToken cancellationToken);
+
     public Task<(IReadOnlyCollection<Account> Items, int TotalItems)> ListAsync(
         int skip,
         int take,

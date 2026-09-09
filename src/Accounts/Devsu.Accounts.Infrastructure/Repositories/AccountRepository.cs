@@ -35,6 +35,15 @@ internal sealed class AccountRepository : IAccountRepository
             cancellationToken);
     }
 
+    public async Task<bool> HasMovementsAsync(
+        string number,
+        CancellationToken cancellationToken)
+    {
+        return await _dbContext.AccountMovements.AnyAsync(
+            movement => movement.AccountNumber == number,
+            cancellationToken);
+    }
+
     public async Task<(IReadOnlyCollection<Account> Items, int TotalItems)> ListAsync(
         int skip,
         int take,

@@ -17,6 +17,7 @@ builder.Services
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new SpanishAccountTypeJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new SpanishMovementTypeJsonConverter());
         options.JsonSerializerOptions.Converters.Add(
             new JsonStringEnumConverter(allowIntegerValues: false));
     });
@@ -52,6 +53,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IAccountMovementService, AccountMovementService>();
 builder.Services.AddAccountsInfrastructure(builder.Configuration);
 
 WebApplication app = builder.Build();

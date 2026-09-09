@@ -1,6 +1,7 @@
 using Devsu.Accounts.Domain.Entities;
 using Devsu.Accounts.Domain.Enums;
 using Devsu.Accounts.Domain.Exceptions;
+using Devsu.Accounts.Domain.ValueObjects;
 
 namespace Devsu.Accounts.UnitTests.Domain;
 
@@ -106,6 +107,73 @@ public sealed class AccountTests
 
         Assert.False(changed);
         Assert.Equal(CreationTime, account.UpdatedAtUtc);
+    }
+
+    [Fact]
+    public void ApplyMovement_Deposit_IncreasesBalance()
+    {
+        Account account = CreateAccount(initialBalance: 100m);
+
+        decimal balance = account.ApplyMovement(
+            MovementAmount.Create(MovementType.Deposit, 50m),
+            CreationTime.AddHours(1));
+
+        Assert.Equal(150m, balance);
+        Assert.Equal(150m, account.CurrentBalance);
+    }
+
+    [Fact]
+    public void ApplyMovement_PartialWithdrawal_DecreasesBalance()
+    {
+        Account account = CreateAccount(initialBalance: 100m);
+
+        decimal balance = account.ApplyMovement(
+            MovementAmount.Create(MovementType.Withdrawal, -40m),
+            CreationTime.AddHours(1));
+
+        Assert.Equal(60m, balance);
+    }
+
+    [Fact]
+    public void ApplyMovement_ExactWithdrawal_LeavesZeroBalance()
+    {
+        Account account = CreateAccount(initialBalance: 100m);
+
+        decimal balance = account.ApplyMovement(
+            MovementAmount.Create(MovementType.Withdrawal, -100m),
+            CreationTime.AddHours(1));
+
+        Assert.Equal(0m, balance);
+    }
+
+    [Fact]
+    public void ApplyMovement_Overdraft_DoesNotChangeBalance()
+    {
+        Account account = CreateAccount(initialBalance: 100m);
+
+        InsufficientFundsException exception = Assert.Throws<InsufficientFundsException>(() =>
+            account.ApplyMovement(
+                MovementAmount.Create(MovementType.Withdrawal, -100.01m),
+                CreationTime.AddHours(1)));
+
+        Assert.Equal("Saldo no disponible", exception.Message);
+        Assert.Equal(100m, account.CurrentBalance);
+        Assert.Equal(CreationTime, account.UpdatedAtUtc);
+    }
+
+    [Fact]
+    public void ApplyMovement_WhenInactive_IsRejected()
+    {
+        Account account = CreateAccount();
+        account.ChangeStatus(false, CreationTime.AddMinutes(1));
+
+        BusinessRuleException exception = Assert.Throws<BusinessRuleException>(() =>
+            account.ApplyMovement(
+                MovementAmount.Create(MovementType.Deposit, 10m),
+                CreationTime.AddHours(1)));
+
+        Assert.Equal("account_inactive", exception.Code);
+        Assert.Equal(100m, account.CurrentBalance);
     }
 
     private static Account CreateAccount(

@@ -1,5 +1,6 @@
 using Devsu.Accounts.Domain.Enums;
 using Devsu.Accounts.Domain.Exceptions;
+using Devsu.Accounts.Domain.ValueObjects;
 
 namespace Devsu.Accounts.Domain.Entities;
 
@@ -104,6 +105,35 @@ public sealed class Account
         IsActive = isActive;
         UpdatedAtUtc = updatedAtUtc.ToUniversalTime();
         return true;
+    }
+
+    public decimal ApplyMovement(MovementAmount amount, DateTimeOffset occurredAtUtc)
+    {
+        ArgumentNullException.ThrowIfNull(amount);
+
+        if (!IsActive)
+        {
+            throw new BusinessRuleException(
+                "account_inactive",
+                "An inactive account cannot receive movements.");
+        }
+
+        decimal resultingBalance = CurrentBalance + amount.Value;
+        if (resultingBalance < 0)
+        {
+            throw new InsufficientFundsException();
+        }
+
+        if (resultingBalance > MaximumBalance)
+        {
+            throw new BusinessRuleException(
+                "account_balance_limit_exceeded",
+                "The resulting balance exceeds the supported decimal(18,2) limit.");
+        }
+
+        CurrentBalance = resultingBalance;
+        UpdatedAtUtc = occurredAtUtc.ToUniversalTime();
+        return CurrentBalance;
     }
 
     private static string ValidateNumber(string number)

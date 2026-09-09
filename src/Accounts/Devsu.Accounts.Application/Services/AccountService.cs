@@ -123,11 +123,13 @@ public sealed class AccountService : IAccountService
         ArgumentNullException.ThrowIfNull(request);
 
         Account account = await FindAccountAsync(NormalizeNumber(number), cancellationToken);
+        bool hasMovements = account.InitialBalance != request.InitialBalance &&
+            await _accountRepository.HasMovementsAsync(account.Number, cancellationToken);
         bool changed = account.Update(
             request.Type,
             request.InitialBalance,
             request.IsActive,
-            hasMovements: false,
+            hasMovements,
             _timeProvider.GetUtcNow());
 
         if (changed)

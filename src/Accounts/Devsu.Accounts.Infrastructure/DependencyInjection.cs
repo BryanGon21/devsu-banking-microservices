@@ -29,6 +29,8 @@ public static class DependencyInjection
                     errorNumbersToAdd: null)));
 
         services.AddScoped<IAccountRepository, AccountRepository>();
+        services.AddScoped<IAccountMovementReader, AccountMovementReader>();
+        services.AddScoped<IAccountMovementWriter, SqlServerAccountMovementWriter>();
         services.AddScoped<ICustomerProjectionReader, CustomerProjectionReader>();
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<AccountsDbContext>());
         services.AddScoped<CustomerIntegrationEventHandler>();

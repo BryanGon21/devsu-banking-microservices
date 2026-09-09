@@ -4,6 +4,7 @@ using Devsu.Accounts.Application.Ports;
 using Devsu.Accounts.Application.Services;
 using Devsu.Accounts.Domain.Entities;
 using Devsu.Accounts.Domain.Enums;
+using Devsu.Accounts.Domain.Exceptions;
 
 namespace Devsu.Accounts.UnitTests.Application;
 
@@ -105,6 +106,29 @@ public sealed class AccountServiceTests
     }
 
     [Fact]
+    public async Task Update_InitialBalanceAfterMovement_IsRejected()
+    {
+        Guid customerId = Guid.NewGuid();
+        FakeAccountRepository repository = new() { HasMovements = true };
+        repository.Accounts.Add(CreateAccount("001234", customerId));
+        FakeUnitOfWork unitOfWork = new();
+        AccountService service = CreateService(
+            repository,
+            new FakeCustomerProjectionReader(CreateProjection(customerId, true)),
+            unitOfWork);
+
+        BusinessRuleException exception =
+            await Assert.ThrowsAsync<BusinessRuleException>(() =>
+                service.UpdateAsync(
+                    "001234",
+                    new UpdateAccountRequest(AccountType.Savings, 200m, true),
+                    CancellationToken.None));
+
+        Assert.Equal("account_initial_balance_locked", exception.Code);
+        Assert.Equal(0, unitOfWork.SaveCalls);
+    }
+
+    [Fact]
     public async Task List_WithOverflowingPage_ThrowsValidation()
     {
         AccountService service = CreateService(
@@ -166,6 +190,8 @@ public sealed class AccountServiceTests
     {
         public List<Account> Accounts { get; } = [];
 
+        public bool HasMovements { get; init; }
+
         public Task AddAsync(Account account, CancellationToken cancellationToken)
         {
             Accounts.Add(account);
@@ -180,6 +206,13 @@ public sealed class AccountServiceTests
         public Task<Account?> GetByNumberAsync(string number, CancellationToken cancellationToken)
         {
             return Task.FromResult(Accounts.SingleOrDefault(account => account.Number == number));
+        }
+
+        public Task<bool> HasMovementsAsync(
+            string number,
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult(HasMovements);
         }
 
         public Task<(IReadOnlyCollection<Account> Items, int TotalItems)> ListAsync(
