@@ -1,4 +1,10 @@
+using System.Text.Json.Serialization;
+using Devsu.Accounts.Api.Errors;
+using Devsu.Accounts.Api.Serialization;
+using Devsu.Accounts.Application.Services;
+using Devsu.Accounts.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -6,7 +12,33 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddJsonConsole();
 
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new SpanishAccountTypeJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter(allowIntegerValues: false));
+    });
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        ValidationProblemDetails problemDetails = new(context.ModelState)
+        {
+            Status = StatusCodes.Status400BadRequest,
+            Title = "Invalid request",
+            Detail = "One or more request fields are invalid.",
+            Instance = context.HttpContext.Request.Path,
+        };
+        problemDetails.Extensions["code"] = "invalid_request";
+        problemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+
+        BadRequestObjectResult result = new(problemDetails);
+        result.ContentTypes.Add("application/problem+json");
+        return result;
+    };
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -16,7 +48,11 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1",
     });
 });
-builder.Services.AddHealthChecks();
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddAccountsInfrastructure(builder.Configuration);
 
 WebApplication app = builder.Build();
 
@@ -26,12 +62,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseExceptionHandler();
 app.MapControllers();
 app.MapHealthChecks("/health/live", new HealthCheckOptions
 {
     Predicate = _ => false,
 });
-app.MapHealthChecks("/health/ready");
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
+});
 app.MapGet("/", () => Results.Redirect("/swagger"))
     .ExcludeFromDescription();
 

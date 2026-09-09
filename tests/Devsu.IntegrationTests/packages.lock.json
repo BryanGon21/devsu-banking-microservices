@@ -962,7 +962,11 @@
         "type": "Project",
         "dependencies": {
           "Devsu.Accounts.Application": "[1.0.0, )",
-          "Devsu.Accounts.Domain": "[1.0.0, )"
+          "Devsu.Accounts.Domain": "[1.0.0, )",
+          "Microsoft.EntityFrameworkCore.SqlServer": "[8.0.22, )",
+          "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore": "[8.0.22, )",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "[8.0.0, )",
+          "RabbitMQ.Client": "[7.1.2, )"
         }
       },
       "devsu.customers.api": {

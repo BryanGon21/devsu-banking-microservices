@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Accounts\Devsu.Accounts.Application\Devsu.Accounts.Application.csproj" />
     <ProjectReference Include="..\..\src\Accounts\Devsu.Accounts.Domain\Devsu.Accounts.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Accounts\Devsu.Accounts.Infrastructure\Devsu.Accounts.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
