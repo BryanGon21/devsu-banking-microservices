@@ -136,6 +136,12 @@ public sealed class Account
         return CurrentBalance;
     }
 
+    public void RebuildBalance(decimal balance, DateTimeOffset rebuiltAtUtc)
+    {
+        CurrentBalance = ValidateBalance(balance, nameof(balance));
+        UpdatedAtUtc = rebuiltAtUtc.ToUniversalTime();
+    }
+
     private static string ValidateNumber(string number)
     {
         if (string.IsNullOrWhiteSpace(number))

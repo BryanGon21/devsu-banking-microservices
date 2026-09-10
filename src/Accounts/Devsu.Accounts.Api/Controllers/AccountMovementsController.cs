@@ -71,6 +71,26 @@ public sealed class AccountMovementsController : ControllerBase
         return Ok(movement);
     }
 
+    [HttpPut("{movimientoId:long}")]
+    [ProducesResponseType<AccountMovementResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<AccountMovementResponse>> Correct(
+        [FromRoute(Name = "movimientoId")] long movementId,
+        CorrectAccountMovementRequest request,
+        CancellationToken cancellationToken)
+    {
+        AccountMovementResponse movement = await _movementService.CorrectAsync(
+            movementId,
+            request,
+            HttpContext.TraceIdentifier,
+            cancellationToken);
+
+        return Ok(movement);
+    }
+
     [HttpGet]
     [ProducesResponseType<PageResponse<AccountMovementResponse>>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

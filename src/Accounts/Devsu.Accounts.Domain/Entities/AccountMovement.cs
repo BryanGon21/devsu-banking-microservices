@@ -73,6 +73,38 @@ public sealed class AccountMovement
             occurredAtUtc);
     }
 
+    public bool HasSameDetails(MovementAmount amount, DateTimeOffset occurredAtUtc)
+    {
+        ArgumentNullException.ThrowIfNull(amount);
+
+        return Type == amount.Type &&
+            Value == amount.Value &&
+            OccurredAtUtc == occurredAtUtc.ToUniversalTime();
+    }
+
+    public bool Correct(
+        MovementAmount amount,
+        DateTimeOffset occurredAtUtc,
+        DateTimeOffset correctedAtUtc)
+    {
+        if (HasSameDetails(amount, occurredAtUtc))
+        {
+            return false;
+        }
+
+        Type = amount.Type;
+        Value = amount.Value;
+        OccurredAtUtc = occurredAtUtc.ToUniversalTime();
+        UpdatedAtUtc = correctedAtUtc.ToUniversalTime();
+        return true;
+    }
+
+    public void RecalculateBalance(decimal balance, DateTimeOffset recalculatedAtUtc)
+    {
+        Balance = ValidateBalance(balance);
+        UpdatedAtUtc = recalculatedAtUtc.ToUniversalTime();
+    }
+
     private static string ValidateAccountNumber(string accountNumber)
     {
         if (string.IsNullOrWhiteSpace(accountNumber))

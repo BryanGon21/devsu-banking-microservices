@@ -13,6 +13,12 @@ public interface IAccountMovementService
         long movementId,
         CancellationToken cancellationToken);
 
+    public Task<AccountMovementResponse> CorrectAsync(
+        long movementId,
+        CorrectAccountMovementRequest request,
+        string correlationId,
+        CancellationToken cancellationToken);
+
     public Task<PageResponse<AccountMovementResponse>> ListAsync(
         int page,
         int pageSize,

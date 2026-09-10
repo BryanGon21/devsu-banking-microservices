@@ -16,15 +16,18 @@ public sealed class AccountMovementService : IAccountMovementService
 
     private readonly IAccountMovementWriter _movementWriter;
     private readonly IAccountMovementReader _movementReader;
+    private readonly IAccountMovementCorrector _movementCorrector;
     private readonly TimeProvider _timeProvider;
 
     public AccountMovementService(
         IAccountMovementWriter movementWriter,
         IAccountMovementReader movementReader,
+        IAccountMovementCorrector movementCorrector,
         TimeProvider timeProvider)
     {
         _movementWriter = movementWriter;
         _movementReader = movementReader;
+        _movementCorrector = movementCorrector;
         _timeProvider = timeProvider;
     }
 
@@ -55,12 +58,7 @@ public sealed class AccountMovementService : IAccountMovementService
         long movementId,
         CancellationToken cancellationToken)
     {
-        if (movementId < 1)
-        {
-            throw new ValidationException(
-                "movement_id_invalid",
-                "Movement identifier must be greater than zero.");
-        }
+        ValidateMovementId(movementId);
 
         AccountMovement movement = await _movementReader.GetByIdAsync(
             movementId,
@@ -70,6 +68,31 @@ public sealed class AccountMovementService : IAccountMovementService
                 "The requested movement does not exist.");
 
         return Map(movement);
+    }
+
+    public async Task<AccountMovementResponse> CorrectAsync(
+        long movementId,
+        CorrectAccountMovementRequest request,
+        string correlationId,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ValidateMovementId(movementId);
+
+        MovementAmount amount = MovementAmount.Create(request.Type, request.Value);
+        string normalizedReason = ValidateAndNormalizeReason(request.Reason);
+        string validatedCorrelationId = ValidateCorrelationId(correlationId);
+
+        AccountMovementCorrectionResult result = await _movementCorrector.CorrectAsync(
+            movementId,
+            amount,
+            request.OccurredAtUtc.ToUniversalTime(),
+            normalizedReason,
+            validatedCorrelationId,
+            _timeProvider.GetUtcNow(),
+            cancellationToken);
+
+        return Map(result.Movement);
     }
 
     public async Task<PageResponse<AccountMovementResponse>> ListAsync(
@@ -134,6 +157,50 @@ public sealed class AccountMovementService : IAccountMovementService
         }
 
         return normalizedAccountNumber;
+    }
+
+    private static void ValidateMovementId(long movementId)
+    {
+        if (movementId < 1)
+        {
+            throw new ValidationException(
+                "movement_id_invalid",
+                "Movement identifier must be greater than zero.");
+        }
+    }
+
+    private static string ValidateAndNormalizeReason(string reason)
+    {
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            throw new ValidationException(
+                "movement_correction_reason_required",
+                "Correction reason is required.");
+        }
+
+        string normalizedReason = reason.Trim();
+        if (normalizedReason.Length > AccountMovementCorrection.MaximumReasonLength)
+        {
+            throw new ValidationException(
+                "movement_correction_reason_too_long",
+                $"Correction reason cannot exceed {AccountMovementCorrection.MaximumReasonLength} characters.");
+        }
+
+        return normalizedReason;
+    }
+
+    private static string ValidateCorrelationId(string correlationId)
+    {
+        if (string.IsNullOrWhiteSpace(correlationId) ||
+            correlationId.Length > AccountMovementCorrection.MaximumCorrelationIdLength ||
+            correlationId.Any(char.IsControl))
+        {
+            throw new ValidationException(
+                "correlation_id_invalid",
+                $"Correlation identifier is required, cannot exceed {AccountMovementCorrection.MaximumCorrelationIdLength} characters, or contain control characters.");
+        }
+
+        return correlationId;
     }
 
     private static string ValidateIdempotencyKey(string? idempotencyKey)

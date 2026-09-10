@@ -117,13 +117,70 @@ public sealed class AccountMovementServiceTests
         Assert.Equal("date_range_too_large", exception.Code);
     }
 
+    [Fact]
+    public async Task Correct_WithValidRequest_PassesAuditDataToCorrector()
+    {
+        FakeMovementCorrector corrector = new();
+        AccountMovementService service = CreateService(
+            new FakeMovementWriter(),
+            new FakeMovementReader(),
+            corrector);
+        DateTimeOffset requestedDate =
+            new(2026, 1, 15, 8, 0, 0, TimeSpan.FromHours(-4));
+
+        AccountMovementResponse response = await service.CorrectAsync(
+            42,
+            new CorrectAccountMovementRequest(
+                requestedDate,
+                MovementType.Withdrawal,
+                -25m,
+                "  Incorrect amount  "),
+            "trace-123",
+            CancellationToken.None);
+
+        Assert.Equal(42, corrector.MovementId);
+        Assert.Equal(requestedDate.ToUniversalTime(), corrector.OccurredAtUtc);
+        Assert.Equal("Incorrect amount", corrector.Reason);
+        Assert.Equal("trace-123", corrector.CorrelationId);
+        Assert.Equal(CurrentTime, corrector.CorrectedAtUtc);
+        Assert.Equal(-25m, response.Value);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task Correct_WithoutReason_IsRejected(string reason)
+    {
+        FakeMovementCorrector corrector = new();
+        AccountMovementService service = CreateService(
+            new FakeMovementWriter(),
+            new FakeMovementReader(),
+            corrector);
+
+        ValidationException exception = await Assert.ThrowsAsync<ValidationException>(() =>
+            service.CorrectAsync(
+                1,
+                new CorrectAccountMovementRequest(
+                    CurrentTime,
+                    MovementType.Deposit,
+                    10m,
+                    reason),
+                "trace-123",
+                CancellationToken.None));
+
+        Assert.Equal("movement_correction_reason_required", exception.Code);
+        Assert.Equal(0, corrector.Calls);
+    }
+
     private static AccountMovementService CreateService(
         FakeMovementWriter writer,
-        FakeMovementReader reader)
+        FakeMovementReader reader,
+        FakeMovementCorrector? corrector = null)
     {
         return new AccountMovementService(
             writer,
             reader,
+            corrector ?? new FakeMovementCorrector(),
             new FixedTimeProvider(CurrentTime));
     }
 
@@ -178,6 +235,49 @@ public sealed class AccountMovementServiceTests
             CancellationToken cancellationToken)
         {
             return Task.FromResult<(IReadOnlyCollection<AccountMovement>, int)>(([], 0));
+        }
+    }
+
+    private sealed class FakeMovementCorrector : IAccountMovementCorrector
+    {
+        public int Calls { get; private set; }
+
+        public long MovementId { get; private set; }
+
+        public DateTimeOffset OccurredAtUtc { get; private set; }
+
+        public string? Reason { get; private set; }
+
+        public string? CorrelationId { get; private set; }
+
+        public DateTimeOffset CorrectedAtUtc { get; private set; }
+
+        public Task<AccountMovementCorrectionResult> CorrectAsync(
+            long movementId,
+            MovementAmount amount,
+            DateTimeOffset occurredAtUtc,
+            string reason,
+            string correlationId,
+            DateTimeOffset correctedAtUtc,
+            CancellationToken cancellationToken)
+        {
+            Calls++;
+            MovementId = movementId;
+            OccurredAtUtc = occurredAtUtc;
+            Reason = reason;
+            CorrelationId = correlationId;
+            CorrectedAtUtc = correctedAtUtc;
+
+            AccountMovement movement = AccountMovement.Create(
+                "001234",
+                amount,
+                75m,
+                "request-1",
+                new string('A', AccountMovement.RequestFingerprintLength),
+                occurredAtUtc);
+
+            return Task.FromResult(
+                new AccountMovementCorrectionResult(movement, WasCorrected: true));
         }
     }
 
