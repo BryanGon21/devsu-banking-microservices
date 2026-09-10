@@ -29,6 +29,16 @@
           "Microsoft.TestPlatform.TestHost": "17.11.1"
         }
       },
+      "RabbitMQ.Client": {
+        "type": "Direct",
+        "requested": "[7.1.2, )",
+        "resolved": "7.1.2",
+        "contentHash": "y3c6ulgULScWthHw5PLM1ShHRLhxg0vCtzX/hh61gRgNecL3ZC3WoBW2HYHoXOVRqTl99Br9E7CZEytGZEsCyQ==",
+        "dependencies": {
+          "System.IO.Pipelines": "8.0.0",
+          "System.Threading.RateLimiting": "8.0.0"
+        }
+      },
       "Testcontainers.MsSql": {
         "type": "Direct",
         "requested": "[4.15.0, )",
@@ -1054,16 +1064,6 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
           "Microsoft.Extensions.Options": "8.0.0",
           "Microsoft.Extensions.Primitives": "8.0.0"
-        }
-      },
-      "RabbitMQ.Client": {
-        "type": "CentralTransitive",
-        "requested": "[7.1.2, )",
-        "resolved": "7.1.2",
-        "contentHash": "y3c6ulgULScWthHw5PLM1ShHRLhxg0vCtzX/hh61gRgNecL3ZC3WoBW2HYHoXOVRqTl99Br9E7CZEytGZEsCyQ==",
-        "dependencies": {
-          "System.IO.Pipelines": "8.0.0",
-          "System.Threading.RateLimiting": "8.0.0"
         }
       },
       "Swashbuckle.AspNetCore": {
