@@ -111,6 +111,9 @@ public sealed class CustomersApiIntegrationTests : IAsyncLifetime
         Assert.Equal(
             "customer_duplicate_identification",
             problem.RootElement.GetProperty("code").GetString());
+        Assert.DoesNotContain(
+            factory.LogSink.Messages,
+            message => message.Contains("unhandled exception", StringComparison.OrdinalIgnoreCase));
 
         await using AsyncServiceScope scope = factory.Services.CreateAsyncScope();
         CustomersDbContext dbContext =

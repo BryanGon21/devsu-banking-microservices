@@ -87,6 +87,12 @@ public sealed class AccountMovementsApiIntegrationTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         using JsonDocument problem = await ApiTestData.ReadJsonAsync(response);
         Assert.Equal("Saldo no disponible", problem.RootElement.GetProperty("detail").GetString());
+        Assert.DoesNotContain(
+            factory.LogSink.Messages,
+            message => message.Contains("unhandled exception", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(
+            factory.LogSink.Messages,
+            message => message.Contains("insufficient_funds", StringComparison.Ordinal));
 
         await using AsyncServiceScope scope = factory.Services.CreateAsyncScope();
         AccountsDbContext dbContext = scope.ServiceProvider.GetRequiredService<AccountsDbContext>();

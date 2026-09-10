@@ -1,0 +1,16 @@
+.git
+.github
+.vs
+.vscode
+.idea
+**/bin
+**/obj
+**/TestResults*
+artifacts
+coverage*
+tests
+.env
+*.user
+*.suo
+*.md
+!README.md
