@@ -54,6 +54,7 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAccountMovementService, AccountMovementService>();
+builder.Services.AddScoped<IAccountStatementService, AccountStatementService>();
 builder.Services.AddAccountsInfrastructure(builder.Configuration);
 
 WebApplication app = builder.Build();

@@ -32,6 +32,8 @@ public static class DependencyInjection
         services.AddScoped<IAccountMovementReader, AccountMovementReader>();
         services.AddScoped<IAccountMovementWriter, SqlServerAccountMovementWriter>();
         services.AddScoped<IAccountMovementCorrector, SqlServerAccountMovementCorrector>();
+        services.AddScoped<IAccountStatementReader, AccountStatementReader>();
+        services.AddScoped<IAccountStatementReader, AccountStatementReader>();
         services.AddScoped<ICustomerProjectionReader, CustomerProjectionReader>();
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<AccountsDbContext>());
         services.AddScoped<CustomerIntegrationEventHandler>();
