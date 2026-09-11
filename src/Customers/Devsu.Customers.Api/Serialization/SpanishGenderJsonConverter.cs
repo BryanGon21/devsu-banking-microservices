@@ -30,6 +30,12 @@ internal sealed class SpanishGenderJsonConverter : JsonConverter<Gender>
         Gender value,
         JsonSerializerOptions options)
     {
+        if (value == Gender.Unspecified)
+        {
+            writer.WriteNullValue();
+            return;
+        }
+
         string externalValue = value switch
         {
             Gender.Male => "Masculino",
