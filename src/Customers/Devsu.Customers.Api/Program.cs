@@ -2,9 +2,11 @@ using System.Text.Json.Serialization;
 using Devsu.Customers.Api.Errors;
 using Devsu.Customers.Api.Serialization;
 using Devsu.Customers.Application.Services;
+using Devsu.Customers.Domain.Enums;
 using Devsu.Customers.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -49,6 +51,16 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "Devsu Customers API",
         Version = "v1",
+    });
+    options.MapType<Gender>(() => new OpenApiSchema
+    {
+        Type = "string",
+        Enum =
+        [
+            new OpenApiString("Masculino"),
+            new OpenApiString("Femenino"),
+            new OpenApiString("Otro"),
+        ],
     });
 });
 builder.Services.AddProblemDetails();

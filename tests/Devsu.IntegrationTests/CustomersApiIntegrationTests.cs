@@ -30,6 +30,37 @@ public sealed class CustomersApiIntegrationTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task SwaggerDocument_UsesSpanishGenderContract()
+    {
+        await using CustomersApiFactory factory = new(
+            _fixture,
+            environment: "Development");
+        using HttpClient client = factory.CreateClient();
+
+        using HttpResponseMessage response = await client.GetAsync("/swagger/v1/swagger.json");
+
+        string responseContent = await response.Content.ReadAsStringAsync();
+        Assert.True(
+            response.IsSuccessStatusCode,
+            $"Swagger document returned {(int)response.StatusCode}: {responseContent}");
+        using JsonDocument document = JsonDocument.Parse(responseContent);
+        JsonElement genderSchema = document.RootElement
+            .GetProperty("components")
+            .GetProperty("schemas")
+            .GetProperty("CreateCustomerRequest")
+            .GetProperty("properties")
+            .GetProperty("genero");
+        string[] values = genderSchema
+            .GetProperty("enum")
+            .EnumerateArray()
+            .Select(value => value.GetString() ?? string.Empty)
+            .ToArray();
+        string[] expectedValues = ["Masculino", "Femenino", "Otro"];
+
+        Assert.Equal(expectedValues, values);
+    }
+
+    [Fact]
     public async Task CreateCustomer_PersistsHashedPasswordAndPendingOutboxWithoutLeakingSecrets()
     {
         await using CustomersApiFactory factory = new(_fixture);

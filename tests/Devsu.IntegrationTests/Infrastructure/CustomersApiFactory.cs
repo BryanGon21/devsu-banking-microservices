@@ -11,22 +11,25 @@ internal sealed class CustomersApiFactory : WebApplicationFactory<CustomersApiAs
     private readonly IntegrationTestFixture _fixture;
     private readonly bool _enableMessaging;
     private readonly int? _rabbitMqPort;
+    private readonly string _environment;
 
     public CustomersApiFactory(
         IntegrationTestFixture fixture,
         bool enableMessaging = false,
-        int? rabbitMqPort = null)
+        int? rabbitMqPort = null,
+        string environment = "Testing")
     {
         _fixture = fixture;
         _enableMessaging = enableMessaging;
         _rabbitMqPort = rabbitMqPort;
+        _environment = environment;
     }
 
     public TestLogSink LogSink { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("Testing");
+        builder.UseEnvironment(_environment);
         builder.UseSetting(
             "ConnectionStrings:CustomersDatabase",
             _fixture.CustomersConnectionString);
