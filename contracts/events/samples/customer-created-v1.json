@@ -1,0 +1,14 @@
+{
+  "eventId": "53e4cd9d-6199-4a9c-a2e6-0dcfe72cbe07",
+  "eventType": "customer.created.v1",
+  "occurredAtUtc": "2026-02-01T10:00:00+00:00",
+  "correlationId": "7a13bfc84f7545929933c888562f30e4",
+  "aggregateId": "48d8eeef-3df6-45de-a3cc-6d4913271c1c",
+  "aggregateVersion": 1,
+  "data": {
+    "customerId": "48d8eeef-3df6-45de-a3cc-6d4913271c1c",
+    "name": "Jose Lema",
+    "isActive": true,
+    "isDeleted": false
+  }
+}

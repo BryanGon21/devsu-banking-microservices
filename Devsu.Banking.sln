@@ -1,35 +1,35 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1257132C-732B-4D2B-B426-D2802EF4A17D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Clientes", "Clientes", "{B12349F2-B22F-42AB-972A-D7D2D2D98A14}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Customers", "Customers", "{B12349F2-B22F-42AB-972A-D7D2D2D98A14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Clientes.Api", "src\Clientes\Devsu.Clientes.Api\Devsu.Clientes.Api.csproj", "{1BCF82DB-A947-4AD3-A248-488DE739AEE1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Customers.Api", "src\Customers\Devsu.Customers.Api\Devsu.Customers.Api.csproj", "{1BCF82DB-A947-4AD3-A248-488DE739AEE1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Clientes.Application", "src\Clientes\Devsu.Clientes.Application\Devsu.Clientes.Application.csproj", "{D75E5032-20FE-4F53-A7D6-8819CF271E06}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Customers.Application", "src\Customers\Devsu.Customers.Application\Devsu.Customers.Application.csproj", "{D75E5032-20FE-4F53-A7D6-8819CF271E06}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Clientes.Domain", "src\Clientes\Devsu.Clientes.Domain\Devsu.Clientes.Domain.csproj", "{B0712B10-2F31-4DA3-9DFC-BBD67CCD51CF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Customers.Domain", "src\Customers\Devsu.Customers.Domain\Devsu.Customers.Domain.csproj", "{B0712B10-2F31-4DA3-9DFC-BBD67CCD51CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Clientes.Infrastructure", "src\Clientes\Devsu.Clientes.Infrastructure\Devsu.Clientes.Infrastructure.csproj", "{35622F36-3F22-4AF9-B071-FD96E5CEC5AE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Customers.Infrastructure", "src\Customers\Devsu.Customers.Infrastructure\Devsu.Customers.Infrastructure.csproj", "{35622F36-3F22-4AF9-B071-FD96E5CEC5AE}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cuentas", "Cuentas", "{C448F43E-D408-44A0-8745-8CC2B5D6D18F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Accounts", "Accounts", "{C448F43E-D408-44A0-8745-8CC2B5D6D18F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Cuentas.Api", "src\Cuentas\Devsu.Cuentas.Api\Devsu.Cuentas.Api.csproj", "{97894ADA-8180-489B-844B-3317C7E242ED}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Accounts.Api", "src\Accounts\Devsu.Accounts.Api\Devsu.Accounts.Api.csproj", "{97894ADA-8180-489B-844B-3317C7E242ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Cuentas.Application", "src\Cuentas\Devsu.Cuentas.Application\Devsu.Cuentas.Application.csproj", "{A0117801-269F-4AAE-BEEF-D432D3DA2CE2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Accounts.Application", "src\Accounts\Devsu.Accounts.Application\Devsu.Accounts.Application.csproj", "{A0117801-269F-4AAE-BEEF-D432D3DA2CE2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Cuentas.Domain", "src\Cuentas\Devsu.Cuentas.Domain\Devsu.Cuentas.Domain.csproj", "{9EA880CB-4584-415C-BF05-8A6B796205B6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Accounts.Domain", "src\Accounts\Devsu.Accounts.Domain\Devsu.Accounts.Domain.csproj", "{9EA880CB-4584-415C-BF05-8A6B796205B6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Cuentas.Infrastructure", "src\Cuentas\Devsu.Cuentas.Infrastructure\Devsu.Cuentas.Infrastructure.csproj", "{8A3F1E4A-B374-4915-9AFC-22A414705161}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Accounts.Infrastructure", "src\Accounts\Devsu.Accounts.Infrastructure\Devsu.Accounts.Infrastructure.csproj", "{8A3F1E4A-B374-4915-9AFC-22A414705161}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B993DBFA-6058-497B-9F79-44E63F15E529}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Clientes.UnitTests", "tests\Devsu.Clientes.UnitTests\Devsu.Clientes.UnitTests.csproj", "{22ED417A-2F6F-4A7B-A825-D32D0813B369}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Customers.UnitTests", "tests\Devsu.Customers.UnitTests\Devsu.Customers.UnitTests.csproj", "{22ED417A-2F6F-4A7B-A825-D32D0813B369}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Cuentas.UnitTests", "tests\Devsu.Cuentas.UnitTests\Devsu.Cuentas.UnitTests.csproj", "{CBB97527-6036-4ACF-BF6C-11BA45FE71EF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.Accounts.UnitTests", "tests\Devsu.Accounts.UnitTests\Devsu.Accounts.UnitTests.csproj", "{CBB97527-6036-4ACF-BF6C-11BA45FE71EF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Devsu.IntegrationTests", "tests\Devsu.IntegrationTests\Devsu.IntegrationTests.csproj", "{8D50E72D-7254-4E04-AA32-CB520DBFBEFF}"
 EndProject

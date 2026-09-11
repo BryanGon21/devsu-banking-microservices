@@ -1,0 +1,7 @@
+* text=auto eol=lf
+
+# Visual Studio solution files are generated with CRLF by the .NET SDK on Windows.
+*.sln text eol=crlf
+
+# EF Core migrations are generated with BOM and CRLF by dotnet-ef on Windows.
+src/**/Migrations/*.cs text eol=crlf

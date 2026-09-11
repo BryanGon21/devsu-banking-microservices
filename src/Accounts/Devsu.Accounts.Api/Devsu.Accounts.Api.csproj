@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Devsu.Accounts.Application\Devsu.Accounts.Application.csproj" />
+    <ProjectReference Include="..\Devsu.Accounts.Infrastructure\Devsu.Accounts.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

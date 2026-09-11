@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://devsu.local/contracts/events/customer-v1.schema.json",
+  "title": "Customer integration event v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "eventType",
+    "occurredAtUtc",
+    "correlationId",
+    "aggregateId",
+    "aggregateVersion",
+    "data"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "eventType": {
+      "type": "string",
+      "enum": [
+        "customer.created.v1",
+        "customer.updated.v1",
+        "customer.deleted.v1"
+      ]
+    },
+    "occurredAtUtc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlationId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "aggregateId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "aggregateVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "data": {
+      "$ref": "#/$defs/customerData"
+    }
+  },
+  "$defs": {
+    "customerData": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "customerId",
+        "name",
+        "isActive",
+        "isDeleted"
+      ],
+      "properties": {
+        "customerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "isActive": {
+          "type": "boolean"
+        },
+        "isDeleted": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

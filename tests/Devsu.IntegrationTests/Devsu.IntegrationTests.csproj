@@ -13,6 +13,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="RabbitMQ.Client" />
     <PackageReference Include="Testcontainers.MsSql" />
     <PackageReference Include="Testcontainers.RabbitMq" />
     <PackageReference Include="xunit" />
@@ -27,8 +28,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Clientes\Devsu.Clientes.Api\Devsu.Clientes.Api.csproj" />
-    <ProjectReference Include="..\..\src\Cuentas\Devsu.Cuentas.Api\Devsu.Cuentas.Api.csproj" />
+    <ProjectReference Include="..\..\src\Customers\Devsu.Customers.Api\Devsu.Customers.Api.csproj" />
+    <ProjectReference Include="..\..\src\Customers\Devsu.Customers.Infrastructure\Devsu.Customers.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Accounts\Devsu.Accounts.Api\Devsu.Accounts.Api.csproj" />
+    <ProjectReference Include="..\..\src\Accounts\Devsu.Accounts.Infrastructure\Devsu.Accounts.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

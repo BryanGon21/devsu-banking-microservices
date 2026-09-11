@@ -1,0 +1,124 @@
+name: devsu-banking
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${SQLSERVER_SA_PASSWORD:?Set SQLSERVER_SA_PASSWORD}
+    ports:
+      - "${SQLSERVER_HOST_PORT:-1433}:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          /opt/mssql-tools18/bin/sqlcmd -C -b -S localhost -U sa
+          -P "$$MSSQL_SA_PASSWORD" -Q "SELECT 1" -o /dev/null
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3.13.7-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?Set RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD}
+    ports:
+      - "${RABBITMQ_HOST_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_HOST_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+  db-init:
+    image: mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04
+    environment:
+      SQLSERVER_SA_PASSWORD: ${SQLSERVER_SA_PASSWORD:?Set SQLSERVER_SA_PASSWORD}
+      CUSTOMERS_DB_PASSWORD: ${CUSTOMERS_DB_PASSWORD:?Set CUSTOMERS_DB_PASSWORD}
+      ACCOUNTS_DB_PASSWORD: ${ACCOUNTS_DB_PASSWORD:?Set ACCOUNTS_DB_PASSWORD}
+    volumes:
+      - ./BaseDatos.sql:/database/BaseDatos.sql:ro
+    command:
+      - /bin/bash
+      - -c
+      - >-
+        /opt/mssql-tools18/bin/sqlcmd -C -b -S sqlserver -U sa
+        -P "$$SQLSERVER_SA_PASSWORD"
+        -v "CUSTOMERS_DB_PASSWORD=$$CUSTOMERS_DB_PASSWORD"
+        "ACCOUNTS_DB_PASSWORD=$$ACCOUNTS_DB_PASSWORD"
+        -i /database/BaseDatos.sql
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: "no"
+
+  customers-api:
+    build:
+      context: .
+      dockerfile: src/Customers/Devsu.Customers.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__CustomersDatabase: >-
+        Server=sqlserver,1433;Database=CustomersDb;User Id=devsu_customers_app;Password=${CUSTOMERS_DB_PASSWORD:?Set CUSTOMERS_DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;MultipleActiveResultSets=False
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__Port: 5672
+      RabbitMq__UserName: ${RABBITMQ_USER:?Set RABBITMQ_USER}
+      RabbitMq__Password: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD}
+      RabbitMq__ConnectionName: customers-service
+    ports:
+      - "${CUSTOMERS_API_HOST_PORT:-8081}:8080"
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/health/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  accounts-api:
+    build:
+      context: .
+      dockerfile: src/Accounts/Devsu.Accounts.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__AccountsDatabase: >-
+        Server=sqlserver,1433;Database=AccountsDb;User Id=devsu_accounts_app;Password=${ACCOUNTS_DB_PASSWORD:?Set ACCOUNTS_DB_PASSWORD};Encrypt=True;TrustServerCertificate=True;MultipleActiveResultSets=False
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__Port: 5672
+      RabbitMq__UserName: ${RABBITMQ_USER:?Set RABBITMQ_USER}
+      RabbitMq__Password: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD}
+      RabbitMq__ConnectionName: accounts-service
+    ports:
+      - "${ACCOUNTS_API_HOST_PORT:-8082}:8080"
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/health/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  sqlserver-data:
+  rabbitmq-data:
